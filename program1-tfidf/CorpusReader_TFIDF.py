@@ -8,6 +8,23 @@ class CorpusReader_TFIDF:
         self.toStem = toStem
         self.ignoreCase = ignoreCase
 
+    # Shared Methods
+    def fields():
+        return 0
+
+    def raw():
+        return 0
+
+    def raw(fileids=[]):
+        return 0
+
+    def words():
+        return 0
+
+    def words(fileids=[]):
+        return 0
+
+    # TF-IDF Specific Methods
     def tfidf(filieid, returnZero=False):
         return 0
 
