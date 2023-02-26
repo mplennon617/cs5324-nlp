@@ -1,6 +1,11 @@
 from nltk.corpus import CorpusReader
 from math import log
 
+import numpy as np
+from numpy.linalg import norm
+
+from nltk.stem.snowball import SnowballStemmer
+
 # DOCUMENTATION:
 #   1. PlainTextCorpusReader:           https://www.nltk.org/_modules/nltk/corpus/reader/plaintext.html
 #   2. Corpus Reader (Parent of (1)):   https://www.nltk.org/api/nltk.corpus.reader.html?highlight=corpusreader#nltk.corpus.reader.CorpusReader
@@ -54,6 +59,8 @@ class CorpusReader_TFIDF:
         @return  TF/IDF vector dictionary.
         """
 
+        snow_stemmer = SnowballStemmer(language='english')
+
         tfidf = {}
         zeros = {}
 
@@ -65,7 +72,8 @@ class CorpusReader_TFIDF:
 
         # Get TF-IDF
         for word in docWords:
-
+            if self.toStem:
+                word = snow_stemmer.stem(word)
             # Calculate TF
             tf = rawDoc.count(word)
 
@@ -91,22 +99,22 @@ class CorpusReader_TFIDF:
         @return  TF/IDF vector dictionary. Key is the fileid
         and value is the TFIDF calculation for the document.
         """
+        snow_stemmer = SnowballStemmer(language='english')
+
         tfidfall = {}
 
         for doc in self.corpus.fileids():
 
             print('ONE')
             # Get tfidf for this document and merge it into tfidfall
- 
             doctfidf = self.tfidf(doc, returnZero=returnZero)
-
-            print('TWO')
             tfidfall[doc] = doctfidf
-            print('THREE')
 
         return tfidfall
 
     def tfidfNew(self, words):
+
+        snow_stemmer = SnowballStemmer(language='english')
 
         tfidf = {}
 
@@ -115,6 +123,8 @@ class CorpusReader_TFIDF:
 
         # Get TF-IDF
         for word in words:
+            if self.toStem:
+                word = snow_stemmer.stem(word)
 
             # Calculate TF
             tf = words.count(word)
@@ -134,6 +144,8 @@ class CorpusReader_TFIDF:
         @return  Dictionary of IDF values.
         """
 
+        snow_stemmer = SnowballStemmer(language='english')
+
         idfs = {}
 
         # Find N
@@ -142,9 +154,13 @@ class CorpusReader_TFIDF:
         # Calculate Document Frequencies (n_i)
         for doc in self.corpus.fileids():
             appeared = {}
+
             # print('ONE')
             # For each word, if it did not yet appear in the doc, add one to doc frequency
             for word in self.words(doc):
+                if self.toStem:
+                    word = snow_stemmer.stem(word)
+
                 if word not in appeared:
                     # print('TWO',word)
                     idfs[word] = idfs.get(word, 0) + 1
@@ -152,15 +168,28 @@ class CorpusReader_TFIDF:
 
         # Calculate IDF_i for each n_i
         for word in idfs.keys():
-            idfs[word] = log(N / idfs[word])
+
+            if self.idf == 'smooth':
+                idfs[word] = log(1 + (N / idfs[word]))
+            else:
+                idfs[word] = log(N / idfs[word])
 
         return idfs
 
     def cosine_sim(self, fileid1, fileid2):
-        return 0
+
+        # Used numpy approach as shown in this example: https://www.geeksforgeeks.org/how-to-calculate-cosine-similarity-in-python/
+        tfidf_vals1 = np.array(list(self.tfidf(fileid1).values()))
+        tfidf_vals2 = np.array(list(self.tfidf(fileid2).values()))
+
+        return np.dot(tfidf_vals1, tfidf_vals2)/(norm(tfidf_vals1)*norm(tfidf_vals2))
 
     def cosine_sim_new(self, words, fileid):
-        return 0
+
+        tfidf_vals1 = np.array(list(self.tfidfNew(words).values()))
+        tfidf_vals2 = np.array(list(self.tfidf(fileid).values()))
+
+        return np.dot(tfidf_vals1, tfidf_vals2)/(norm(tfidf_vals1)*norm(tfidf_vals2))
 
     def query(self, words):
         return 0
