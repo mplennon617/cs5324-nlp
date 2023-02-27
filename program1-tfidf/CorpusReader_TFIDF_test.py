@@ -17,7 +17,8 @@ print('*************** 6 ***************')
 print(len(inaugural.sents(['1789-Washington.txt'])))
 
 # Testing CorpusReader_TFIDF functions
-myCorpus = CorpusReader_TFIDF(inaugural, toStem=True)
+myCorpus = CorpusReader_TFIDF(
+    inaugural, toStem=True, ignoreCase=True, stopWord='toRemove.txt')
 
 print('\n> Testing CorpusReader_TFIDF functions <\n')
 print('*************** 1 ***************')
@@ -27,37 +28,31 @@ print('*************** 2 ***************')
 dict = myCorpus.tfidf('1789-Washington.txt')
 print(dict)
 print('*************** 3 ***************')
-dict = myCorpus.tfidf('1789-Washington.txt', returnZero = True)
+dict = myCorpus.tfidf('1789-Washington.txt', returnZero=True)
 print(dict)
-# print('*************** 4 ***************')
-# print('This will take some time...')
-# dict = myCorpus.tfidfAll()
-# print(dict)
+print('*************** 4 ***************')
+print('This will take some time...')
+dict = myCorpus.tfidfAll()
+print(dict)
 print('*************** 5 ***************')
-print(myCorpus.cosine_sim('1789-Washington.txt','1793-Washington.txt'))
+print(len(myCorpus.words('1789-Washington.txt')))
+print(len(myCorpus.words('1793-Washington.txt')))
+print(myCorpus.cosine_sim('1789-Washington.txt', '1793-Washington.txt'))
+print(myCorpus.cosine_sim('1789-Washington.txt', '2017-Trump.txt'))
+content = []
 
-# print(myCorpus.tfidf('1789-Washington.txt'))
-# print("-----\n")
-# q = myCorpus.tfidfAll()
-# for x in q:
-#    print(x, q[x])
-# print("-----\n")
-# print(myCorpus.cosine_sim('1789-Washington.txt', '2021-Biden.txt')
-# print("-----\n")
-# print(myCorpus.cosine_sim_new(['citizens', 'economic', 'growth', 'economic'],
-# '2021-Biden.txt')
+with open('1793-washington-local.txt', 'r') as data_file:
+    for line in data_file:
+        lineSplit = line.split()
+        content.append(lineSplit)
+    content = list(itertools.chain.from_iterable(content))
+    print(content)
 
-#  This is for testing your own corpus
-#
-#  create a set of text files, store them in a directory specified from 'rootDir' variable
-#
-#
-'''
-rootDir = '/myhomedirectory'   # change that to the directory where the files are
-newCorpus = PlaintextCorpusReader(rootDir, '*')
-tfidfCorpus = CorpusReader_TFIDF(newCorpus)
-q = tfidfCorpus.tfidfAll()
-for x in q:
-   print(x, q[x])
-print("-----\n")
-'''
+print('*************** 6 ***************')
+dict = myCorpus.tfidfNew(content)
+print(dict)
+print('*************** 7 ***************')
+print(myCorpus.cosine_sim_new(content, '1789-Washington.txt'))
+print('*************** 8 ***************')
+print('This will take some time...')
+print(myCorpus.query(content))
